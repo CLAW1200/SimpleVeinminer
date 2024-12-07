@@ -44,7 +44,6 @@ public class SimpleVeinminerClient implements ClientModInitializer {
     private static SimpleConfigClient config;
     public static KeyBinding veinMineKeybind = KeyBindingHelper.registerKeyBinding(new StickyKeyBinding("key.simpleveinminer.veinminingKey", GLFW.GLFW_KEY_GRAVE_ACCENT, "key.simpleveinminer.veinminerCategory", () -> config.keybindToggles));
     public static boolean veinMining;
-    public static boolean veinMiningActived = false;
 
     public static SimpleConfig.SimpleConfigCopy getWorldConfig() {
         if (worldConfig == null) return SimpleConfig.SimpleConfigCopy.from(config);
@@ -118,22 +117,15 @@ public class SimpleVeinminerClient implements ClientModInitializer {
         new CommandRegisterClient();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            final PlayerEntity player = client.player;
-            if(player == null) return;
-            if (SimpleVeinminerClient.veinMineKeybind.wasPressed()) {
-                veinMiningActived = !veinMiningActived;
-                player.sendMessage(Text.literal("VeinMining set to: " + (veinMiningActived ? "ON" : "OFF")).formatted(Formatting.YELLOW));
-            }
-        });
-        AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-            final boolean allowed = veinMiningActived && player.isSneaking();
-            if (veinMining != allowed) {
+            if (veinMining != veinMineKeybind.isPressed()) {
                 veinMining = !veinMining;
+                if (config.keybindToggles)
+                    client.player.sendMessage(veinMining ? Text.translatable("messages.simpleveinminer.veinminingToggled.on") : Text.translatable("messages.simpleveinminer.veinminingToggled.off"), true);
+
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeBoolean(veinMining);
                 ClientPlayNetworking.send(Constants.NETWORKING_VEINMINE, buf);
             }
-            return ActionResult.PASS;
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
