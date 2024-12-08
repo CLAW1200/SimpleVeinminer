@@ -1,4 +1,4 @@
-
+### (1.20.1) Patched to newer fabric versions without altering gameplay
 
 ## This is a ***veinmining*** mod
 ### Veinmining mines veins of a same block. For mining 3x3s, look for a hammer/excavator mod
